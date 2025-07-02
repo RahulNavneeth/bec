@@ -3,42 +3,60 @@
 #include <ctype.h>
 #include "bec.h"
 
-char bec_get (const char **input) {
+char get (const char **input) {
 	return (**input);
 }
 
-char bec_next (const char **input) {
+char next (const char **input) {
 	(*input)++;
 	return (**input);
 }
 
-long parse_int (const char **input) {
+long get_int_value (const char **input) {
 	long value = 0;
 	int sign = 1;
-	if (bec_get(input) == '-') {
+	if (get(input) == '-') {
 		sign = -1;
-		bec_next(input);
+		next(input);
 	}
-	while (isdigit (bec_get(input))) {
-		value = (value * 10) + (bec_get (input) - '0');
-		bec_next(input);
+	while (isdigit (get(input))) {
+		value = (value * 10) + (get (input) - '0');
+		next(input);
 	}
 	return value * sign;
 } 
 
-Bec* bec_parse_int(const char **input) {
-	bec_next(input);
+Bec* parse_int(const char **input) {
+	next(input);
 	Bec *b = (Bec *)malloc(sizeof(Bec));
 	b->type = BEC_INT;
-	b->integer = parse_int(input);
-	if (bec_get(input) != 'e') {
+	b->integer = get_int_value(input);
+	if (get(input) != 'e') {
 		free(b);
 		return NULL;
 	}
 	return b;
 }
 
+Bec *parse_string(const char **input) {
+	Bec *b = (Bec*)malloc(sizeof(Bec));
+	b->type = BEC_STRING;
+	long len = get_int_value(input);  
+	b->string.len = len;
+	if (get(input) != ':') {
+		free(b);
+		return NULL;
+	}
+	char *str = (char*)malloc(sizeof(char)*b->string.len);
+	for (size_t i = 0 ; i < b->string.len ; i++) {
+		str[i] = next(input);
+	}
+	b->string.str = str;
+	return b;
+}
+
 Bec* bec_parse (const char **input) {
-	if (bec_get(input) == 'i') return bec_parse_int(input);
+	if (get(input) == 'i') return parse_int(input);
+	if (isdigit(get(input))) return parse_string(input);
 	return NULL;
 }

@@ -3,7 +3,7 @@
 
 typedef enum {
 	BEC_INT,
-	BEC_STING,
+	BEC_STRING,
 	BEC_LIST,
 	BEC_DIST,
 } BecType;
@@ -14,16 +14,16 @@ typedef struct {
 		long integer;
 		struct {
 			char *str;
-			int len;
+			long len;
 		} string;
 		struct {
 			BecType **items;
-			int count;
+			long count;
 		} list;
 		struct {
 			char **keys;
 			BecType **values;
-			int count;
+			long count;
 		} dict;
 	};
 } Bec;
@@ -31,8 +31,5 @@ typedef struct {
 Bec* bec_parse(const char **input);
 void bec_clean(Bec *b);
 void bec_print(Bec *b);
-
-char bec_next(const char **input);
-char bec_get(const char **input);
 
 #endif // BEC_H
