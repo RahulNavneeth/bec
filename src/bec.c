@@ -55,8 +55,33 @@ Bec *parse_string(const char **input) {
 	return b;
 }
 
+Bec* parse_list(const char **input) {
+	Bec *b = (Bec*)malloc(sizeof(Bec));
+	b->type = BEC_LIST;
+	Bec **items = NULL;
+	int count = 0; 
+	char curr = next(input);
+	while (curr != 'e' && curr != ' ') {
+		Bec* rb = bec_parse(input);
+		if (rb == NULL) return NULL;
+		count++;
+		items = realloc(items, count * sizeof(*items));
+		items[count-1] = rb;
+		curr = next(input);
+	}
+	if (curr != 'e') {
+		free(b); free(b->list.items);
+		return NULL;
+	}
+	b->list.count = count;
+	b->list.items = items;
+	return b;
+}
+
 Bec* bec_parse (const char **input) {
+	printf("curr :: %c\n", get(input));
 	if (get(input) == 'i') return parse_int(input);
 	if (isdigit(get(input))) return parse_string(input);
+	if (get(input) == 'l') return parse_list(input);
 	return NULL;
 }
