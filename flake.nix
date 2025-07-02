@@ -1,5 +1,5 @@
 {
-	description = "BEC : Bencoding";
+	description = "BEC : B(ittorrent)encoding";
 
 	inputs = {
 		nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -15,6 +15,7 @@
 					buildInputs = with pkgs; [
 						clang
 						gnumake
+						zsh
 					];
 				};
 			});
