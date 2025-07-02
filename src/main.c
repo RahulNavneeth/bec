@@ -3,7 +3,7 @@
 #include "bec.h"
 
 int32_t main(int argc, char **argv) {
-	const char *input = "6:dlkfjkdkjf";
+	const char *input = "6:yellow";
 	const char *p = input;
 	Bec* b = bec_parse(&p);
 	if (b == NULL) {
