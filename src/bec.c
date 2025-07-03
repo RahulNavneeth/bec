@@ -121,3 +121,32 @@ Bec* bec_parse (const char **input) {
 	if (get(input) == 'd') return parse_dict(input);
 	return NULL;
 }
+
+void bec_print(Bec* b, int indent) {
+	for (size_t i = 0 ; i < indent ; i++) printf("  ");
+	switch (b->type) {
+		case BEC_INT:
+			printf ("\033[0;32m%d\n", b->integer);
+			break;
+		case BEC_STRING:
+			printf ("\033[0;32m%s\n", b->string.str);
+			break;
+		case BEC_LIST:
+			for (size_t i = 0 ; i < b->list.count ; i++) {
+				bec_print(b->list.items[i], i ? indent : indent - 1);
+			}
+			break;
+		case BEC_DICT:
+			for (size_t i = 0 ; i < b->dict.count ; i++) {
+				bec_print(b->dict.keys[i], indent);
+				bec_print(b->dict.values[i], indent+1);
+			}
+			break;
+	}
+	return;
+}
+
+void bec_clean(Bec *b) {
+	free(b);
+	return;
+}

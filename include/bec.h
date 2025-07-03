@@ -30,6 +30,6 @@ typedef struct {
 
 Bec* bec_parse(const char **input);
 void bec_clean(Bec *b);
-void bec_print(Bec *b);
+void bec_print(Bec *b, int);
 
 #endif // BEC_H
