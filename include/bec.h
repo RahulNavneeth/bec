@@ -5,7 +5,7 @@ typedef enum {
 	BEC_INT,
 	BEC_STRING,
 	BEC_LIST,
-	BEC_DIST,
+	BEC_DICT,
 } BecType;
 
 typedef struct {
@@ -21,7 +21,7 @@ typedef struct {
 			long count;
 		} list;
 		struct {
-			char **keys;
+			BecType **keys;
 			BecType **values;
 			long count;
 		} dict;

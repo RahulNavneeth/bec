@@ -62,7 +62,7 @@ Bec* parse_list(const char **input) {
 	int count = 0; 
 	char curr = next(input);
 	while (curr != 'e' && curr != ' ') {
-		Bec* rb = bec_parse(input);
+ 		Bec* rb = bec_parse(input);
 		if (rb == NULL) return NULL;
 		count++;
 		items = realloc(items, count * sizeof(*items));
@@ -78,10 +78,46 @@ Bec* parse_list(const char **input) {
 	return b;
 }
 
+Bec* parse_dict(const char **input) {
+	Bec* b = (Bec*)malloc(sizeof(Bec));
+	b->type = BEC_DICT;
+	char curr = next(input);
+	long count = 0;
+	Bec **keys = NULL;
+	Bec **values = NULL;
+	while (curr != 'e' && curr != ' ') {
+		count ++;
+		Bec* key = parse_string(input);
+		if (key == NULL) {
+			free(b); return NULL;
+		}
+		keys = realloc(keys, count * sizeof(*keys));
+		next(input);
+		keys[count-1] = key;
+		Bec* value = bec_parse(input);
+		if (value == NULL) {
+			free(b); return NULL;
+		}
+		values = realloc(values, count * sizeof(*values));
+		values[count-1] = value;
+		curr = next(input);
+	}
+	if (curr != 'e') {
+		free(b);
+		free(keys);
+		free(values);
+		return NULL;
+	}
+	b->dict.keys = keys;
+	b->dict.values = values;
+	b->dict.count = count;
+	return b;
+}
+
 Bec* bec_parse (const char **input) {
-	printf("curr :: %c\n", get(input));
 	if (get(input) == 'i') return parse_int(input);
 	if (isdigit(get(input))) return parse_string(input);
 	if (get(input) == 'l') return parse_list(input);
+	if (get(input) == 'd') return parse_dict(input);
 	return NULL;
 }
