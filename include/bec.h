@@ -28,7 +28,8 @@ typedef struct {
 	};
 } Bec;
 
-Bec* bec_parse(const char **input);
+Bec* bec_decode(const char **input);
+char* bec_encode(Bec *b);
 void bec_clean(Bec *b);
 void bec_print(Bec *b, int);
 

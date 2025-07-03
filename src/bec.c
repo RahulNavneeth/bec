@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <math.h>
+#include <string.h>
 #include "bec.h"
 
 char get (const char **input) {
@@ -62,7 +64,7 @@ Bec* parse_list(const char **input) {
 	int count = 0; 
 	char curr = next(input);
 	while (curr != 'e' && curr != ' ') {
- 		Bec* rb = bec_parse(input);
+ 		Bec* rb = bec_decode(input);
 		if (rb == NULL) return NULL;
 		count++;
 		items = realloc(items, count * sizeof(*items));
@@ -94,7 +96,7 @@ Bec* parse_dict(const char **input) {
 		keys = realloc(keys, count * sizeof(*keys));
 		next(input);
 		keys[count-1] = key;
-		Bec* value = bec_parse(input);
+		Bec* value = bec_decode(input);
 		if (value == NULL) {
 			free(b); return NULL;
 		}
@@ -114,7 +116,7 @@ Bec* parse_dict(const char **input) {
 	return b;
 }
 
-Bec* bec_parse (const char **input) {
+Bec* bec_decode (const char **input) {
 	if (get(input) == 'i') return parse_int(input);
 	if (isdigit(get(input))) return parse_string(input);
 	if (get(input) == 'l') return parse_list(input);
@@ -144,6 +146,55 @@ void bec_print(Bec* b, int indent) {
 			break;
 	}
 	return;
+}
+
+char* bec_encode(Bec* b) {
+	char* res = NULL;
+
+	switch (b->type) {
+		case BEC_INT: {
+			int len = snprintf(NULL, 0, "i%lde", b->integer);
+			res = malloc(len + 1);
+			sprintf(res, "i%lde", b->integer);
+			break;
+		}
+		case BEC_STRING: {
+			int len = snprintf(NULL, 0, "%d:%s", b->string.len, b->string.str);
+			res = malloc(len + 1);
+			sprintf(res, "%d:%s", b->string.len, b->string.str);
+			break;
+		}
+		case BEC_LIST: {
+			res = strdup("l");
+			for (size_t i = 0; i < b->list.count; i++) {
+				char* enc = bec_encode(b->list.items[i]);
+				size_t new_len = strlen(res) + strlen(enc) + 1;
+				res = realloc(res, new_len + 1);
+				strcat(res, enc);
+				free(enc);
+			}
+			res = realloc(res, strlen(res) + 2);
+			strcat(res, "e");
+			break;
+		}
+		case BEC_DICT: {
+			res = strdup("d");
+			for (size_t i = 0; i < b->dict.count; i++) {
+				char* k = bec_encode(b->dict.keys[i]);
+				char* v = bec_encode(b->dict.values[i]);
+				size_t new_len = strlen(res) + strlen(k) + strlen(v) + 1;
+				res = realloc(res, new_len + 1);
+				strcat(res, k);
+				strcat(res, v);
+				free(k);
+				free(v);
+			}
+			res = realloc(res, strlen(res) + 2);
+			strcat(res, "e");
+			break;
+		}
+	}
+	return res;
 }
 
 void bec_clean(Bec *b) {
