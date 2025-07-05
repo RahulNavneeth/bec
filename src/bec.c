@@ -125,27 +125,80 @@ Bec* bec_decode (const char **input) {
 }
 
 void bec_print(Bec* b, int indent) {
-	for (size_t i = 0 ; i < indent ; i++) printf("  ");
-	switch (b->type) {
-		case BEC_INT:
-			printf ("\033[0;32m%d\n", b->integer);
-			break;
-		case BEC_STRING:
-			printf ("\033[0;32m%s\n", b->string.str);
-			break;
-		case BEC_LIST:
-			for (size_t i = 0 ; i < b->list.count ; i++) {
-				bec_print(b->list.items[i], i ? indent : indent - 1);
-			}
-			break;
-		case BEC_DICT:
-			for (size_t i = 0 ; i < b->dict.count ; i++) {
-				bec_print(b->dict.keys[i], indent);
-				bec_print(b->dict.values[i], indent+1);
-			}
-			break;
-	}
-	return;
+    if (b == NULL) {
+        for (int i = 0; i < indent; i++) printf("  ");
+        printf("\033[0;31m[NULL]\033[0m\n");
+        return;
+    }
+    for (int i = 0; i < indent; i++) printf("  ");
+    
+    switch (b->type) {
+        case BEC_INT:
+            printf("\033[0;32m%ld\033[0m\n", b->integer);
+            break;
+            
+        case BEC_STRING: {
+            printf("\033[0;33m[%d bytes] ", b->string.len);
+            
+            int is_printable = 1;
+            for (int i = 0; i < b->string.len; i++) {
+                unsigned char c = (unsigned char)b->string.str[i];
+                if (c < 32 && c != '\n' && c != '\r' && c != '\t') {
+                    is_printable = 0;
+                    break;
+                }
+            }
+            
+            if (is_printable && b->string.len < 200) {
+                printf("\"");
+                for (int i = 0; i < b->string.len; i++) {
+                    char c = b->string.str[i];
+                    if (c == '\n') printf("\\n");
+                    else if (c == '\r') printf("\\r");
+                    else if (c == '\t') printf("\\t");
+                    else if (c == '"') printf("\\\"");
+                    else if (c == '\\') printf("\\\\");
+                    else printf("%c", c);
+                }
+                printf("\"");
+            } else {
+                printf("(hex) ");
+                int show_bytes = b->string.len < 32 ? b->string.len : 32;
+                for (int i = 0; i < show_bytes; i++) {
+                    printf("%02x", (unsigned char)b->string.str[i]);
+                    if (i < show_bytes - 1) printf(" ");
+                }
+                if (b->string.len > 32) printf("...");
+            }
+            printf("\033[0m\n");
+            break;
+        }
+        
+        case BEC_LIST:
+            printf("\033[0;36mList[%zu items]:\033[0m\n", b->list.count);
+            for (size_t i = 0; i < b->list.count; i++) {
+                for (int j = 0; j < indent + 1; j++) printf("  ");
+                printf("[%zu] ", i);
+                bec_print(b->list.items[i], 0);
+            }
+            break;
+            
+        case BEC_DICT:
+            printf("\033[0;35mDict[%zu items]:\033[0m\n", b->dict.count);
+            for (size_t i = 0; i < b->dict.count; i++) {
+                for (int j = 0; j < indent + 1; j++) printf("  ");
+                printf("Key: ");
+                bec_print(b->dict.keys[i], 0);
+                for (int j = 0; j < indent + 1; j++) printf("  ");
+                printf("Val: ");
+                bec_print(b->dict.values[i], indent + 1);
+            }
+            break;
+            
+        default:
+            printf("\033[0;31mUnknown type: %d\033[0m\n", b->type);
+            break;
+    }
 }
 
 char* bec_encode(Bec* b) {
