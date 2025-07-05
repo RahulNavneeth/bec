@@ -14,7 +14,7 @@ dirs:
 	mkdir -p $(BIN)/src
 
 exec: $(OBJ)
-	$(CC) -o $(BIN)/main $^
+	ar rcs $(BIN)/libbec.a $^
 
 $(BIN)/src/%.o: src/%.c
 	$(CC) -c $< -o $@ $(CFLAGS)
